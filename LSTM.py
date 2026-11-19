@@ -6,6 +6,10 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error
 import matplotlib.pyplot as plt
 
+# Fix the random seed so results are reproducible
+torch.manual_seed(42)
+np.random.seed(42)
+
 # 1. Load Data & Select Multivariate Features
 df = pd.read_csv('rice_data.csv')
 features = [

@@ -5,11 +5,12 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 import matplotlib.pyplot as plt
 
 # 1. Load data
-df = pd.read_csv('data.csv')
+df = pd.read_csv('rice_data.csv')
 
 # 2. Feature engineering for tabular/tree-based models
-# Convert Month to datetime
-df['Date'] = pd.to_datetime(df['Month'], format='%b-%y')
+# Build dates from row order (continuous monthly data, Jan 2005 - Dec 2022).
+# The Month column in rice_data.csv was mangled by a spreadsheet, so it is not parsed.
+df['Date'] = pd.date_range(start='2005-01-01', periods=len(df), freq='MS')
 df['Month_Num'] = df['Date'].dt.month
 df['Quarter'] = df['Date'].dt.quarter
 df['Year'] = df['Date'].dt.year
