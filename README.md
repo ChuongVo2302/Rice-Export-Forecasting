@@ -10,12 +10,7 @@ Each script trains its model, prints test-set RMSE and MAE, and saves an *Actual
 
 ## Dataset
 
-Monthly data ending in **December 2022**, provided in two files:
-
-| File | Used by | Coverage |
-|---|---|---|
-| [data.csv](data.csv) | `GRU.py`, `XGBoost.py` | Aug 2008 – Dec 2022 (164 rows), `Month` formatted as `Aug-08` |
-| [rice_data.csv](rice_data.csv) | `LSTM.py` | Jan 2005 – Dec 2022 (207 rows), a longer version of the same series |
+All three models use [rice_data.csv](rice_data.csv), which has 207 monthly rows from **January 2005 to December 2022**.
 
 Columns:
 
@@ -58,6 +53,8 @@ Tree models can't read sequences directly, so time information is turned into ta
 
 The script also prints the 5 most important features.
 
+> The `Month` column in `rice_data.csv` contains spreadsheet-mangled dates (e.g. `1/5/2026` for Jan 2005), so the script rebuilds the dates from row order, starting January 2005.
+
 ## Results
 
 Charts compare actual and predicted export volume over the test months:
@@ -79,9 +76,13 @@ Charts compare actual and predicted export volume over the test months:
 
 | Model | Test RMSE (tons) | Test MAE (tons) |
 |---|---|---|
-| LSTM | _fill in_ | _fill in_ |
-| GRU | _fill in_ | _fill in_ |
-| XGBoost | _fill in_ | _fill in_ |
+| **GRU** | **151.16** | **109.24** |
+| LSTM | 156.66 | 116.61 |
+| XGBoost | 186.22 | 143.24 |
+
+GRU scores best on both metrics, with LSTM close behind. XGBoost trails them. Its most important features are the 12‑month and 1‑month volume lags, which shows how strongly yearly seasonality and last month's volume drive exports.
+
+_All runs use a fixed random seed (42), so these scores are reproducible._
 
 ## Getting Started
 
@@ -96,7 +97,7 @@ pip install pandas numpy scikit-learn matplotlib torch xgboost
 
 ### Run
 
-Run each script from the project root so the relative paths to the CSV files and `Results/` resolve:
+Run each script from the project root so the relative paths to `rice_data.csv` and `Results/` resolve:
 
 ```bash
 python LSTM.py
@@ -113,12 +114,11 @@ Rice-Export-Forecasting/
 ├── LSTM.py           # Multivariate LSTM (PyTorch)
 ├── GRU.py            # Multivariate GRU (PyTorch)
 ├── XGBoost.py        # XGBoost with lag/rolling features
-├── data.csv          # Monthly dataset (used by GRU and XGBoost)
-├── rice_data.csv     # Monthly dataset (used by LSTM)
+├── rice_data.csv     # Monthly dataset (Jan 2005 – Dec 2022), used by all models
 └── Results/          # Saved prediction charts
 ```
 
 ## Notes
 
-- No random seed is set for PyTorch, so LSTM and GRU results vary slightly from run to run. Add `torch.manual_seed(42)` at the top of each script for reproducible numbers.
+- LSTM and GRU set `torch.manual_seed(42)` and `np.random.seed(42)`, and XGBoost uses `random_state=42`, so repeated runs give the same scores. Change the seed to see how much results vary with initialization.
 - The scalers are fit on the full dataset before the train/test split, so a little information from the test period leaks into training. Fitting them on the training portion only would give a stricter evaluation.
